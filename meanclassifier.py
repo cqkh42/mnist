@@ -7,10 +7,8 @@ class MeanClassifier:
         self.metric = metric
 
     def fit(self, X, y):
-        cls_1 = X[y==0]
-        cls_2 = X[y==1]
-        self.means[0] = cls_1.mean(0)
-        self.means[1] = cls_2.mean(0)
+        for cls in y.unique():
+            self.means[cls.item()] = X[y==cls.item()].mean(0, keepdim=True)
         return self
 
     def mae(self, X, cls):
