@@ -10,11 +10,12 @@ def mae(preds, targets):
 
 
 class GradientDescentRegressor:
-    def __init__(self, lr=0.01, epochs=10_000, loss='mse'):
+    def __init__(self, lr=0.01, epochs=10_000, loss='mse', seed=None):
         self.lr = lr
         self.epochs = epochs
         self.weights = None
         self.bias = None
+        self.seed = seed
 
         if loss == 'mse':
             self.loss_func = mse
@@ -24,6 +25,8 @@ class GradientDescentRegressor:
             raise NotImplementedError
 
     def fit(self, X, y):
+        if self.seed is not None:
+            torch.manual_seed(self.seed)
         self.weights = torch.randn(X.shape[1]).requires_grad_()
         self.bias = torch.randn(1).requires_grad_()
 
