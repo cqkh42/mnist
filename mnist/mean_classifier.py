@@ -1,4 +1,8 @@
 import torch
+import torch.nn.functional as F
+
+
+from base_classifier import BaseClassifier
 
 
 def mse(X, y):
@@ -9,7 +13,7 @@ def mae(X, y):
     return (X - y).abs().mean(-1)
 
 
-class MeanClassifier:
+class MeanClassifier(BaseClassifier):
     def __init__(self, loss='mse'):
         if loss == 'mse':
             self.loss = mse
@@ -23,19 +27,19 @@ class MeanClassifier:
 
     def fit(self, X, y):
         means = []
+        y = self.normalise_y(y)
         for cls in y.unique():
-            mean = X[y==cls.item()].mean(0)
-            self.labels.append(cls.item())
+            mean = X[y == cls.item()].mean(0)
             means.append(mean)
         self.means = torch.stack(means)
+        return self
+
+    def proba(self, X):
+        preds = torch.stack([self.loss(X, mean) for mean in self.means], -1)
+        proba = torch.nn.functional.softmax(preds, -1)
+        return 1 - proba
 
     def predict(self, X):
-        preds = torch.stack([self.loss(X, mean) for mean in self.means], -1).argmin(-1)
-        preds = torch.tensor([self.labels[i] for i in preds])    
-        return preds   
-
-    def score(self, X, y_true, metric='accuracy'):
-        if metric != 'accuracy':
-            raise NotImplementedError
-        preds = self.predict(X)
-        return (y_true == preds).float().mean().item()
+        probs = self.proba(X)
+        cls = probs.argmax(-1)
+        return self.to_labels(cls)

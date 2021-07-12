@@ -1,48 +1,29 @@
 import torch
-import torch.nn.functional as F
+
+from base_classifier import BaseClassifier
+from gradient_descent_mixin import GradientDescentMixin
 
 
-class GradientDescentClassifier:
+class GradientDescentClassifier(GradientDescentMixin, BaseClassifier):
     def __init__(self, lr=1, epochs=200, seed=None):
-        self.lr = lr
-        self.epochs = epochs
-        self.weights = None
-        self.bias = None
-        self.seed = seed
+        super().__init__(lr, epochs, seed)
+        self.labels = []
 
     def fit(self, X, y):
         self.initialise(X)
+        y = self.normalise_y(y)
         for i in range(self.epochs):
             self.epoch(X, y)
         return self
 
-    def initialise(self, X):
-        if self.seed is not None:
-            torch.manual_seed(self.seed)
-        self.weights = torch.randn(X.shape[1]).requires_grad_()
-        self.bias = torch.randn(1).requires_grad_()
-
     def proba(self, X):
-        return ((X @ self.weights) + self.bias).sigmoid()
-
-
-    def epoch(self, X, y):
-        epoch_loss = self.loss(X, y)
-        epoch_loss.backward()
-        self.weights.data -= self.weights.grad.data * self.lr
-        self.bias.data -= self.bias.grad.data * self.lr
-        self.weights.grad = None
-        self.bias.grad = None
-        # print(epoch_loss, self.score(X, y))
+        return self._predict(X).sigmoid()
 
     def loss(self, X, y_true):
         probs = self.proba(X)
         return torch.where(y_true == 1, 1-probs, probs).mean()
 
-    def predict(self, X):
+    def predict(self, X) -> torch.tensor:
         probs = self.proba(X)
-        return probs.round()
-
-    def score(self, X, y_true):
-        preds = self.predict(X)
-        return (preds == y_true).float().mean()
+        label_index = probs.round().int()
+        return self.to_labels(label_index)

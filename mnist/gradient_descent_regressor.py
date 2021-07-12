@@ -1,21 +1,18 @@
-import torch
 import torch.nn.functional as F
+
+from gradient_descent_mixin import GradientDescentMixin
 
 
 def mse(preds, targets): 
-    return F.mse_loss(preds, targets).sqrt()
+    return F.mse_loss(preds, targets)
 
 def mae(preds, targets):
     return F.l1_loss(preds, targets)
 
 
-class GradientDescentRegressor:
-    def __init__(self, lr=0.01, epochs=10_000, loss='mse', seed=None):
-        self.lr = lr
-        self.epochs = epochs
-        self.weights = None
-        self.bias = None
-        self.seed = seed
+class GradientDescentRegressor(GradientDescentMixin):
+    def __init__(self, lr=1, epochs=10_000, loss='mse', seed=None):
+        super().__init__(lr, epochs, seed)
 
         if loss == 'mse':
             self.loss_func = mse
@@ -25,22 +22,17 @@ class GradientDescentRegressor:
             raise NotImplementedError
 
     def fit(self, X, y):
-        if self.seed is not None:
-            torch.manual_seed(self.seed)
-        self.weights = torch.randn(X.shape[1]).requires_grad_()
-        self.bias = torch.randn(1).requires_grad_()
-
+        self.initialise(X)
         for i in range(self.epochs):
-            loss = self.score(X, y)
-            loss.backward()
-            self.weights.data -= self.weights.grad.data * self.lr
-            self.bias.data -= self.bias.grad.data * self.lr
-            self.weights.grad = None
-            self.bias.grad = None
+            self.epoch(X, y)
         return self
 
+    def loss(self, X, y_true):
+        preds = self.predict(X)
+        return self.loss_func(preds, y_true)
+
     def predict(self, X):
-        return (X @ self.weights) + self.bias
+        return self._predict(X)
 
     def score(self, X, y):
         predictions = self.predict(X)
