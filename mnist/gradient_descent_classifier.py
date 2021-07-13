@@ -7,7 +7,7 @@ from gradient_descent_mixin import GradientDescentMixin
 class GradientDescentClassifier(GradientDescentMixin, BaseClassifier):
     def __init__(self, lr=1, epochs=200, seed=None):
         super().__init__(lr, epochs, seed)
-        self.labels = []
+        super(BaseClassifier).__init__()
 
     def fit(self, X, y):
         self.initialise(X)
@@ -17,13 +17,9 @@ class GradientDescentClassifier(GradientDescentMixin, BaseClassifier):
         return self
 
     def proba(self, X):
-        return self._predict(X).sigmoid()
+        a = self._predict(X).sigmoid()
+        return torch.stack([1-a, a], -1)
 
     def loss(self, X, y_true):
         probs = self.proba(X)
-        return torch.where(y_true == 1, 1-probs, probs).mean()
-
-    def predict(self, X) -> torch.tensor:
-        probs = self.proba(X)
-        label_index = probs.round().int()
-        return self.to_labels(label_index)
+        return torch.where(y_true == 1, probs[:, 0], probs[:, 1]).mean()

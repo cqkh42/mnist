@@ -6,11 +6,11 @@ from base_classifier import BaseClassifier
 
 
 def mse(X, y):
-    return (X - y).pow(2).mean(-1)
+    return 1/(X - y).pow(2).mean(-1)
 
 
 def mae(X, y):
-    return (X - y).abs().mean(-1)
+    return 1/(X - y).abs().mean(-1)
 
 
 class MeanClassifier(BaseClassifier):
@@ -21,9 +21,9 @@ class MeanClassifier(BaseClassifier):
             self.loss = mae
         else:
             raise NotImplementedError
+        super().__init__()
 
         self.means = []
-        self.labels = []
 
     def fit(self, X, y):
         means = []
@@ -37,9 +37,4 @@ class MeanClassifier(BaseClassifier):
     def proba(self, X):
         preds = torch.stack([self.loss(X, mean) for mean in self.means], -1)
         proba = torch.nn.functional.softmax(preds, -1)
-        return 1 - proba
-
-    def predict(self, X):
-        probs = self.proba(X)
-        cls = probs.argmax(-1)
-        return self.to_labels(cls)
+        return proba

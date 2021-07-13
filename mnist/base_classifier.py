@@ -2,8 +2,8 @@ import torch
 
 
 class BaseClassifier:
-    def predict(self, X):
-        return NotImplementedError
+    def __init__(self):
+        self.labels = []
 
     def accuracy(self, X, y_true):
         preds = self.predict(X)
@@ -16,3 +16,8 @@ class BaseClassifier:
         self.labels = y.unique().tolist()
         y = torch.tensor([self.labels.index(val) for val in y])
         return y
+
+    def predict(self, X):
+        probs = self.proba(X)
+        cls = probs.argmax(-1)
+        return self.to_labels(cls)
