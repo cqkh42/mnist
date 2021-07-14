@@ -2,10 +2,10 @@ import torch
 from torch.utils.data import DataLoader
 
 from base_classifier import BaseClassifier
-from gradient_descent_mixin import GradientDescentMixin
+from sgdmixin import SGDMixin
 
 
-class GradientDescentClassifier(GradientDescentMixin, BaseClassifier):
+class SGDClassifier(SGDMixin, BaseClassifier):
     def __init__(self, lr=1, epochs=200, seed=None, batch_size=5):
         super().__init__(lr, epochs, seed)
         super(BaseClassifier).__init__()

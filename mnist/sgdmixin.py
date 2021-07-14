@@ -1,7 +1,7 @@
 import torch
 
 
-class GradientDescentMixin:
+class SGDMixin:
     def __init__(self, lr, epochs, seed):
         self.seed = seed
         self.lr = lr

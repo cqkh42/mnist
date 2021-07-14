@@ -1,7 +1,7 @@
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from gradient_descent_mixin import GradientDescentMixin
+from sgdmixin import SGDMixin
 
 
 def mse(preds, targets): 
@@ -11,7 +11,7 @@ def mae(preds, targets):
     return F.l1_loss(preds, targets)
 
 
-class GradientDescentRegressor(GradientDescentMixin):
+class SGDRegressor(SGDMixin):
     def __init__(self, lr=1, epochs=10_000, loss='mse', seed=None, batch_size=5):
         super().__init__(lr, epochs, seed)
         self.batch_size = batch_size
