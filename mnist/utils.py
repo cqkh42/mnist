@@ -33,6 +33,9 @@ def load_mnist():
 
     y_train = torch.from_numpy(np.array([7] * len(train_sevens) + [3] * len(train_threes)))
     y_test = torch.from_numpy(np.array([7] * len(test_sevens) + [3] * len(test_threes)))  
+    
+    y_train = y_train.reshape((-1,1))
+    y_test = y_test.reshape((-1, 1))
     return X_train, X_test, y_train, y_test
 
 

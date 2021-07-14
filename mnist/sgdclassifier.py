@@ -13,7 +13,7 @@ class SGDClassifier(SGDMixin, BaseClassifier):
 
     def fit(self, X, y):
         self.initialise(X)
-        y_norm = self.normalise_y(y)
+        y_norm = self.normalise_y(y).reshape((-1,1))
         dl = DataLoader(
             list(zip(X, y_norm)),
             batch_size=self.batch_size,
@@ -25,7 +25,7 @@ class SGDClassifier(SGDMixin, BaseClassifier):
 
     def proba(self, X):
         a = self._predict(X).sigmoid()
-        return torch.stack([1-a, a], -1)
+        return torch.stack([1-a, a], -1)[:,0]
 
     def loss(self, X, y_true):
         probs = self.proba(X)

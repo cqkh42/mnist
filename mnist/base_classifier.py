@@ -20,4 +20,4 @@ class BaseClassifier:
     def predict(self, X):
         probs = self.proba(X)
         cls = probs.argmax(-1)
-        return self.to_labels(cls)
+        return self.to_labels(cls).reshape(-1, 1)
