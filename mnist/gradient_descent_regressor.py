@@ -1,4 +1,5 @@
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 
 from gradient_descent_mixin import GradientDescentMixin
 
@@ -11,8 +12,9 @@ def mae(preds, targets):
 
 
 class GradientDescentRegressor(GradientDescentMixin):
-    def __init__(self, lr=1, epochs=10_000, loss='mse', seed=None):
+    def __init__(self, lr=1, epochs=10_000, loss='mse', seed=None, batch_size=5):
         super().__init__(lr, epochs, seed)
+        self.batch_size = batch_size
 
         if loss == 'mse':
             self.loss_func = mse
@@ -23,8 +25,14 @@ class GradientDescentRegressor(GradientDescentMixin):
 
     def fit(self, X, y):
         self.initialise(X)
+        dl = DataLoader(
+            list(zip(X, y)),
+            batch_size=self.batch_size,
+            shuffle=True
+        )
+
         for i in range(self.epochs):
-            self.epoch(X, y)
+            self.epoch(dl)
         return self
 
     def loss(self, X, y_true):

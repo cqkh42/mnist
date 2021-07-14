@@ -1,19 +1,26 @@
 import torch
+from torch.utils.data import DataLoader
 
 from base_classifier import BaseClassifier
 from gradient_descent_mixin import GradientDescentMixin
 
 
 class GradientDescentClassifier(GradientDescentMixin, BaseClassifier):
-    def __init__(self, lr=1, epochs=200, seed=None):
+    def __init__(self, lr=1, epochs=200, seed=None, batch_size=5):
         super().__init__(lr, epochs, seed)
         super(BaseClassifier).__init__()
+        self.batch_size = batch_size
 
     def fit(self, X, y):
         self.initialise(X)
-        y = self.normalise_y(y)
+        y_norm = self.normalise_y(y)
+        dl = DataLoader(
+            list(zip(X, y_norm)),
+            batch_size=self.batch_size,
+            shuffle=True
+        )
         for i in range(self.epochs):
-            self.epoch(X, y)
+            self.epoch(dl)
         return self
 
     def proba(self, X):
