@@ -31,16 +31,9 @@ def load_mnist():
     X_test = torch.cat((test_sevens, test_threes)).view(-1, 28*28)
     X_train = torch.cat((train_sevens, train_threes)).view(-1, 28*28)
 
-    y_train = torch.from_numpy(np.array([7] * len(train_sevens) + [3] * len(train_threes)))
-    y_test = torch.from_numpy(np.array([7] * len(test_sevens) + [3] * len(test_threes)))  
+    y_train = torch.from_numpy(np.array([0] * len(train_sevens) + [1] * len(train_threes)))
+    y_test = torch.from_numpy(np.array([0] * len(test_sevens) + [1] * len(test_threes)))  
     
-    y_train = y_train.reshape((-1,1))
-    y_test = y_test.reshape((-1, 1))
+    y_train = y_train.unsqueeze(1)
+    y_test = y_test.unsqueeze(1)
     return X_train, X_test, y_train, y_test
-
-
-def load_diabetes():
-    X, y = datasets.load_diabetes(return_X_y=True)
-    y = sklearn.preprocessing.StandardScaler().fit_transform(y.reshape(-1, 1))[:, 0]
-    X = torch.from_numpy(X).float()
-    y = torch.from_numpy(y).float()
