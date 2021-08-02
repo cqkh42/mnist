@@ -2,3 +2,4 @@ fastai
 fastbook
 torch
 torchvision
+numpy

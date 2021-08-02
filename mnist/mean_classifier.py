@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 
-from base import BaseClassifier
+from .base import BaseClassifier
 
 
 def mse(X, y):
@@ -26,7 +26,10 @@ class MeanClassifier(BaseClassifier):
         self.means = []
         self.m = {}
 
-    def fit(self, X, y):
+    def fit(self, dl):
+        X, y = zip(*dl.dataset)
+        X = torch.stack(X)
+        y = torch.stack(y)
         means = []
         for cls in y.unique():
             mean = X[y[:, 0] == cls].mean(0)
@@ -36,5 +39,5 @@ class MeanClassifier(BaseClassifier):
 
     def proba(self, X):
         preds = torch.stack([self.loss(X, mean) for mean in self.means], -1)
-        proba = torch.nn.functional.softmax(preds, -1)[:,1:]
+        proba = torch.nn.functional.softmax(preds, -1)[:, 1:]
         return proba
