@@ -1,8 +1,6 @@
+import numpy as np
 import torch
 import torch.nn.functional as F
-
-
-from .base import BaseClassifier
 
 
 def mse(X, y):
@@ -13,18 +11,10 @@ def mae(X, y):
     return 1/(X - y).abs().mean(-1)
 
 
-class MeanClassifier(BaseClassifier):
-    def __init__(self, loss='mse'):
-        if loss == 'mse':
-            self.loss = mse
-        elif loss == 'mae':
-            self.loss = mae
-        else:
-            raise NotImplementedError
-        super().__init__()
-
+class MeanClassifier:
+    def __init__(self, loss):
+        self.loss = loss
         self.means = []
-        self.m = {}
 
     def fit(self, dl):
         X, y = zip(*dl.dataset)
@@ -41,3 +31,11 @@ class MeanClassifier(BaseClassifier):
         preds = torch.stack([self.loss(X, mean) for mean in self.means], -1)
         proba = torch.nn.functional.softmax(preds, -1)[:, 1:]
         return proba
+
+    def score(self, dl):
+        batch_scores = [(self.predict(X) == y).float().mean() for X, y in dl]
+        return np.mean(batch_scores)
+
+    def predict(self, X: torch.tensor):
+        probs = self.proba(X)
+        return (probs > 0.5).int()

@@ -8,8 +8,7 @@ from .optimiser import SGD
 
 
 def accuracy(xb, yb):
-    preds = xb.sigmoid()
-    correct = (preds>0.5) == yb
+    correct = (xb > 0.5) == yb
     return correct.float().mean().item()
 
 
@@ -27,7 +26,11 @@ class SGDClassifier(Learner):
     def fit(self, dl):
         model_dims = dl.dataset[0][0].shape[0]
         # instantiate model
-        self.model = torch.nn.Linear(model_dims, 1)
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(model_dims, 1),
+            torch.nn.Sigmoid()
+        )
+
         self.load_optimiser()
         self._fit(dl)
 
