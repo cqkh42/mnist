@@ -15,22 +15,23 @@ class MeanClassifier:
     def __init__(self, loss):
         self.loss = loss
         self.means = []
+        self.classes_ = []
 
     def fit(self, dl):
         X, y = zip(*dl.dataset)
         X = torch.stack(X)
-        y = torch.stack(y)
+        y = torch.tensor(y)
         means = []
         for cls in y.unique():
-            mean = X[y[:, 0] == cls].mean(0)
+            self.classes_.append(cls)
+            mean = X[y == cls].mean(0)
             means.append(mean)
         self.means = torch.stack(means)
         return self
 
     def proba(self, X):
         preds = torch.stack([self.loss(X, mean) for mean in self.means], -1)
-        proba = torch.nn.functional.softmax(preds, -1)[:, 1:]
-        return proba
+        return preds.softmax(1)
 
     def score(self, dl):
         batch_scores = [(self.predict(X) == y).float().mean() for X, y in dl]
@@ -38,4 +39,5 @@ class MeanClassifier:
 
     def predict(self, X: torch.tensor):
         probs = self.proba(X)
-        return (probs > 0.5).int()
+        chosen_class = probs.argmax(1)
+        return torch.tensor([self.classes_[index] for index in chosen_class])
